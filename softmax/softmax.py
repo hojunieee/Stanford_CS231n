@@ -85,6 +85,7 @@ def softmax_loss_naive(W, X, y, reg):
     return loss, dW
 
 
+
 def softmax_loss_vectorized(W, X, y, reg):
     """
     Softmax loss function, vectorized version.
@@ -100,11 +101,24 @@ def softmax_loss_vectorized(W, X, y, reg):
     # Store the loss in loss and the gradient in dW. If you are not careful     #
     # here, it is easy to run into numeric instability. Don't forget the        #
     # regularization!                                                           #
+    N, D = X.shape
+    C = W.shape[1]
+
+    scores = X.dot(W)         #scores = N*C matrix
+    scores -= scores.max(axis = 1, keepdims = True)         #max in each row
+    
+    probs = np.exp(scores)/np.sum(np.exp(scores), axis = 1, keepdims = True)         #probs = N*C matrix
+
+    loss = -np.log(probs[np.arange(N), y])
+    loss = np.sum(loss)   
+    loss /= N
+    loss += reg * (np.sum(W * W))
+
+    dScores = probs.reshape(N, -1)         #dScores = N*C matrix
+    dScores = dScores -1
+    dW = np.dot(X.T, dScores)         #dW shoule be D*C, so multipy X transpose(D*N) with dScore(N*C)
+    dW /= N
+    dW += 2*reg*W 
+
     #############################################################################
-    # *****START OF YOUR CODE (DO NOT DELETE/MODIFY THIS LINE)*****
-
-    pass
-
-    # *****END OF YOUR CODE (DO NOT DELETE/MODIFY THIS LINE)*****
-
     return loss, dW
